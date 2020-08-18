@@ -125,9 +125,14 @@ const FoodDetails: React.FC = () => {
     }
   }
 
-  const toggleFavorite = useCallback(() => {
+  const toggleFavorite = useCallback(async () => {
+    if (isFavorite) {
+      await api.delete(`favorites/${food.id}`);
+    } else {
+      await api.post(`favorites/`, food);
+    }
+
     setIsFavorite(!isFavorite);
-    api.post('favorites', food);
   }, [isFavorite, food]);
 
   const cartTotal = useMemo(() => {
@@ -141,7 +146,15 @@ const FoodDetails: React.FC = () => {
   }, [extras, food, foodQuantity]);
 
   async function handleFinishOrder(): Promise<void> {
-    // Finish the order and save on the API
+    const data = {
+      ...food,
+      product_id: food.id,
+      extras,
+    };
+
+    await api.post('orders', data);
+
+    navigation.navigate('DashboardStack');
   }
 
   // Calculate the correct icon name
